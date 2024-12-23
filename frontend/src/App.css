@@ -40,3 +40,130 @@
 .read-the-docs {
   color: #888;
 }
+/* App.css */
+/* App.css */
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f6fa;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  margin: 0;
+}
+
+/* Container for each page - makes sure it fills the whole screen */
+.landing-page, .sign-in-page, .create-account-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Takes up the full screen height */
+  width: 100%;  /* Takes up the full screen width */
+  padding: 20px;
+  background-color: #f5f6fa;
+  overflow: hidden; /* Prevents overflow in smaller screens */
+}
+
+/* Login Container (Centering the content) */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px; /* Maximum width to prevent it from getting too wide */
+  min-width: 300px; /* Ensures that it won't get too narrow on small screens */
+}
+
+/* Input Fields */
+input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+input:focus {
+  outline: none;
+  border-color: #4e73df;
+  box-shadow: 0 0 4px rgba(78, 115, 223, 0.6);
+}
+
+/* Buttons */
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background-color: #4e73df; /* Primary button color */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #375a8c;
+}
+
+/* Small Link Buttons */
+button.skip-login {
+  background-color: transparent;
+  color: #4e73df;
+  border: none;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+
+button.skip-login:hover {
+  text-decoration: underline;
+  color: #2e59a1;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .login-container {
+    padding: 20px;
+  }
+
+  input {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+/* Page Specific Styling */
+.landing-page .login-container {
+  background-color: #ffffff;
+}
+
+.sign-in-page .login-container {
+  background-color: #e7f1ff; /* Light blue background for the sign-in page */
+}
+
+.create-account-page .login-container {
+  background-color: #e3f7e7; /* Light green background for the create account page */
+}
