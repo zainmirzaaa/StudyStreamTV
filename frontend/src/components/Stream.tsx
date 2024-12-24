@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
 import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
 
-const Home: React.FC = () => {
+const Stream: React.FC = () => {
   const navigate = useNavigate();
 
   // Function to handle sign-out and navigate to the sign-in page
@@ -25,14 +25,16 @@ const Home: React.FC = () => {
         </div>
         <button onClick={handleSignOut} style={styles.signOutButton}>Logout</button>
       </nav>
-      <div style={styles.contentContainer}>
-        <h1>Welcome!</h1>
+
+        <div style={styles.welcomeMessage}>
+          <h1>Welcome!</h1>
+       
       </div>
     </div>
   );
 };
 
-// Styles for centering the content, navbar, and button
+// Styles for the page layout, navbar, and profile picture
 const styles = {
   pageContainer: {
     display: 'flex',
@@ -61,9 +63,6 @@ const styles = {
     fontSize: '18px',
     transition: 'color 0.3s',
   },
-  navLinkHover: {
-    color: '#ff6347', // Tomato color when hovered
-  },
   signOutButton: {
     padding: '10px 20px',
     fontSize: '16px',
@@ -74,14 +73,29 @@ const styles = {
     cursor: 'pointer',
     transition: 'background-color 0.3s',
   },
-  contentContainer: {
+  profileContainer: {
+    position: 'relative',
     textAlign: 'center',
-    marginTop: '60px', // To ensure content isn't hidden under the navbar
+    marginTop: '60px', // To avoid overlap with navbar
     backgroundColor: 'white',
     padding: '20px',
     borderRadius: '8px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   },
+  profilePictureContainer: {
+    position: 'absolute',
+    top: '-50px', // Adjust to position above the content
+    right: '20px',
+  },
+  profilePicture: {
+    width: '100px',
+    height: '100px',
+    borderRadius: '50%', // Circular shape
+    border: '3px solid #ff6347', // Tomato border color
+  },
+  welcomeMessage: {
+    marginTop: '60px', // To avoid overlap with profile picture
+  },
 };
 
-export default Home;
+export default Stream;
