@@ -5,7 +5,7 @@ import './App.css';
 import { AuthProvider } from './Context/AuthContext';
 import Home from './components/Home';
 import Profile from './components/Profile';
-import Stream from './components/Stream';
+import Stream from './components/Stream.tsx';
 
 function App() {
   return (

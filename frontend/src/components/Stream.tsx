@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react'; // Import useState and useRef
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
 import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
 
@@ -15,20 +15,122 @@ const Stream: React.FC = () => {
     }
   };
 
+  const [isCapturing, setIsCapturing] = useState<boolean>(false);
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null); // Correct type for videoBlob
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null); // Type the ref to MediaRecorder
+  const videoStreamRef = useRef<MediaStream | null>(null); // Type the ref to MediaStream
+  const videoRef = useRef<HTMLVideoElement | null>(null); // Type the ref to HTMLVideoElement
+
+  // Start screen capture
+  const startCapture = async () => {
+    try {
+      // Request screen capture
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+      });
+      videoStreamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCapturing(true);
+
+      // Create MediaRecorder to record the stream
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+
+      mediaRecorderRef.current.ondataavailable = (e: BlobEvent) => {
+        chunks.push(e.data); // Correct type for event
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        setVideoBlob(blob);
+      };
+
+      // Start recording
+      mediaRecorderRef.current.start();
+    } catch (err) {
+      console.error("Error accessing screen media:", err);
+    }
+  };
+
+  // Stop screen capture
+  const stopCapture = () => {
+    if (videoStreamRef.current) {
+      videoStreamRef.current.getTracks().forEach((track) => track.stop());
+    }
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+    setIsCapturing(false);
+  };
+  // Send video to backend (Go API)
+  const sendVideoToBackend = async () => {
+    console.log("entered")
+    if (videoBlob) {
+      const formData = new FormData();
+      formData.append('file', videoBlob, 'capture.webm');
+      try {
+        const response = await fetch('http://localhost:8080/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          console.log('Video uploaded successfully');
+        } else {
+          console.error('Video upload failed');
+        }
+      } catch (err) {
+        console.error('Error uploading video:', err);
+      }
+    }
+  };
+
   return (
     <div style={styles.pageContainer}>
       <nav style={styles.navbar}>
         <div style={styles.navLinks}>
-          <a href="/profile" style={styles.navLink}>Profile</a>
-          <a href="/stream" style={styles.navLink}>Stream</a>
-          <a href="/watch" style={styles.navLink}>Watch</a>
+          <a href="/profile" style={styles.navLink}>
+            Profile
+          </a>
+          <a href="/stream" style={styles.navLink}>
+            Stream
+          </a>
+          <a href="/watch" style={styles.navLink}>
+            Watch
+          </a>
         </div>
-        <button onClick={handleSignOut} style={styles.signOutButton}>Logout</button>
+        <button onClick={handleSignOut} style={styles.signOutButton}>
+          Logout
+        </button>
       </nav>
 
-        <div style={styles.welcomeMessage}>
-          <h1>Welcome!</h1>
-       
+      <div style={styles.welcomeMessage}>
+        <h1>Welcome!</h1>
+        <h2>Screen Capture</h2>
+        <div>
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            style={styles.videoPlayer}
+          ></video>
+          {!isCapturing ? (
+            <button onClick={startCapture} style={styles.captureButton}>
+              Start Capture
+            </button>
+          ) : (
+            <button onClick={stopCapture} style={styles.captureButton}>
+              Stop Capture
+            </button>
+          )}
+          {videoBlob && !isCapturing && (
+            <button onClick={sendVideoToBackend} style={styles.uploadButton}>
+              Send Video
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -73,28 +175,39 @@ const styles = {
     cursor: 'pointer',
     transition: 'background-color 0.3s',
   },
-  profileContainer: {
-    position: 'relative',
-    textAlign: 'center',
-    marginTop: '60px', // To avoid overlap with navbar
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  captureButton: {
+    padding: '10px 20px',
+    fontSize: '16px',
+    backgroundColor: '#4caf50', // Green color for capture button
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    margin: '10px 0',
+    transition: 'background-color 0.3s',
   },
-  profilePictureContainer: {
-    position: 'absolute',
-    top: '-50px', // Adjust to position above the content
-    right: '20px',
-  },
-  profilePicture: {
-    width: '100px',
-    height: '100px',
-    borderRadius: '50%', // Circular shape
-    border: '3px solid #ff6347', // Tomato border color
+  uploadButton: {
+    padding: '10px 20px',
+    fontSize: '16px',
+    backgroundColor: '#2196f3', // Blue color for upload button
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    margin: '10px 0',
+    transition: 'background-color 0.3s',
   },
   welcomeMessage: {
-    marginTop: '60px', // To avoid overlap with profile picture
+    marginTop: '60px', // To avoid overlap with navbar
+    textAlign: 'center',
+  },
+  videoPlayer: {
+    width: '100%',
+    maxWidth: '600px',
+    height: 'auto',
+    border: '2px solid #ccc',
+    margin: '20px auto',
+    display: 'block',
   },
 };
 
