@@ -1,9 +1,25 @@
 import React, { useState, useRef } from 'react'; // Import useState and useRef
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
 import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
-
+import { useAuth } from '../Context/AuthContext';
+import {getUsername} from '../API/Firestore.js'
 const Stream: React.FC = () => {
   const navigate = useNavigate();
+  const user = useAuth()
+  // Hardcoded username for demonstration
+  let email;
+  let username;
+  if(user.user){
+    email = user.user.email
+    username = getUsername(email);
+
+  }else {
+    email = "No email"
+    username = "john_doe";
+
+  }
+  
+   // Replace this with your actual method of fetching the username
 
   // Function to handle sign-out and navigate to the sign-in page
   const handleSignOut = async () => {
@@ -64,12 +80,13 @@ const Stream: React.FC = () => {
     }
     setIsCapturing(false);
   };
+
   // Send video to backend (Go API)
   const sendVideoToBackend = async () => {
-    console.log("entered")
     if (videoBlob) {
       const formData = new FormData();
       formData.append('file', videoBlob, 'capture.webm');
+      formData.append('username', username); // Add the username to the FormData
       try {
         const response = await fetch('http://localhost:8080/upload', {
           method: 'POST',

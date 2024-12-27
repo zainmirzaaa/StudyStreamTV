@@ -12,7 +12,6 @@ import (
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure the method is POST
 	if r.Method != http.MethodPost {
-
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
@@ -23,6 +22,14 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return
 	}
+
+	// Get the username from the form data
+	username := r.FormValue("username") // Retrieve the username
+	if username == "" {
+		http.Error(w, "Username is required", http.StatusBadRequest)
+		return
+	}
+
 	// Get the file from the form data
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -30,6 +37,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
+
 	// Create a new file in the server's file system
 	outFile, err := os.Create("uploaded_video.webm")
 	if err != nil {
@@ -46,7 +54,8 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with success
-	fmt.Fprintf(w, "File uploaded successfully")
+
+	fmt.Fprintf(w, "File uploaded successfully for user: %s", username)
 }
 
 func main() {
