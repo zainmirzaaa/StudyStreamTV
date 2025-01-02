@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'; // Import useState, useEffect, and useRef
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
-import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
+import React, { useState, useEffect, useRef } from 'react'; 
+import { useNavigate } from 'react-router-dom'; 
+import { signOutUser } from '../API/Authentication'; 
 import { useAuth } from '../Context/AuthContext';
-import { getUsername } from '../API/Firestore.js'; // Assuming this is an async function
+import { getUsername } from '../API/Firestore.js';
 
 const Stream: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ const Stream: React.FC = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null); // Type the ref to MediaRecorder
   const videoStreamRef = useRef<MediaStream | null>(null); // Type the ref to MediaStream
   const videoRef = useRef<HTMLVideoElement | null>(null); // Type the ref to HTMLVideoElement
+  const [chunks, setChunks] = useState<Blob[]>([]); // Store chunks as state
 
   // Fetch username when user is authenticated
   useEffect(() => {
@@ -21,19 +22,18 @@ const Stream: React.FC = () => {
         const email = user.user.email;
         try {
           const fetchedUsername = await getUsername(email);
-          console.log(fetchedUsername) // Fetch username asynchronously
-          setUsername(fetchedUsername); // Update state with the fetched username
+          setUsername(fetchedUsername);
         } catch (err) {
           console.error('Error fetching username:', err);
           setUsername('john_doe'); // Fallback username in case of error
         }
       } else {
-        setUsername('john_doe'); // Fallback username if not authenticated
+        setUsername('john_doe');
       }
     };
 
     fetchUsername();
-  }, [user.user]); // Re-run this effect whenever the `user.user` state changes
+  }, [user.user]);
 
   // Function to handle sign-out and navigate to the sign-in page
   const handleSignOut = async () => {
@@ -48,7 +48,6 @@ const Stream: React.FC = () => {
   // Start screen capture
   const startCapture = async () => {
     try {
-      // Request screen capture
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
       });
@@ -60,19 +59,30 @@ const Stream: React.FC = () => {
 
       // Create MediaRecorder to record the stream
       mediaRecorderRef.current = new MediaRecorder(stream);
-      const chunks: Blob[] = [];
-
+      
       mediaRecorderRef.current.ondataavailable = (e: BlobEvent) => {
-        chunks.push(e.data); // Correct type for event
+        setChunks(prevChunks => [...prevChunks, e.data]); // Accumulate chunks
       };
 
       mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        setVideoBlob(blob);
+        const finalBlob = new Blob(chunks, { type: 'video/webm' });
+        setVideoBlob(finalBlob); // Save the final video blob
+        setChunks([]); // Clear chunks once recording stops
       };
 
       // Start recording
       mediaRecorderRef.current.start();
+
+      // Send video every 10 seconds
+      const intervalId = setInterval(() => {
+        if (chunks.length > 0) {
+          sendVideoToBackend();
+          setChunks([]); // Clear chunks after sending
+        }
+      }, 10000); // 10 seconds interval
+
+      // Store the interval ID to clear it later when the capture is stopped
+      mediaRecorderRef.current.onstop = () => clearInterval(intervalId);
     } catch (err) {
       console.error('Error accessing screen media:', err);
     }
@@ -91,8 +101,10 @@ const Stream: React.FC = () => {
 
   // Send video to backend (Go API)
   const sendVideoToBackend = async () => {
-    if (videoBlob) {
+    if (chunks.length > 0) {
       const formData = new FormData();
+      // Concatenate all accumulated chunks into a single Blob
+      const videoBlob = new Blob(chunks, { type: 'video/webm' });
       formData.append('file', videoBlob, 'capture.webm');
       formData.append('username', username); // Add the username to the FormData
       try {
@@ -116,44 +128,25 @@ const Stream: React.FC = () => {
     <div style={styles.pageContainer}>
       <nav style={styles.navbar}>
         <div style={styles.navLinks}>
-          <a href="/profile" style={styles.navLink}>
-            Profile
-          </a>
-          <a href="/stream" style={styles.navLink}>
-            Stream
-          </a>
-          <a href="/watch" style={styles.navLink}>
-            Watch
-          </a>
+          <a href="/profile" style={styles.navLink}>Profile</a>
+          <a href="/stream" style={styles.navLink}>Stream</a>
+          <a href="/watch" style={styles.navLink}>Watch</a>
         </div>
-        <button onClick={handleSignOut} style={styles.signOutButton}>
-          Logout
-        </button>
+        <button onClick={handleSignOut} style={styles.signOutButton}>Logout</button>
       </nav>
 
       <div style={styles.welcomeMessage}>
         <h1>Welcome, {username}!</h1>
         <h2>Screen Capture</h2>
         <div>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            style={styles.videoPlayer}
-          ></video>
+          <video ref={videoRef} autoPlay muted style={styles.videoPlayer}></video>
           {!isCapturing ? (
-            <button onClick={startCapture} style={styles.captureButton}>
-              Start Capture
-            </button>
+            <button onClick={startCapture} style={styles.captureButton}>Start Capture</button>
           ) : (
-            <button onClick={stopCapture} style={styles.captureButton}>
-              Stop Capture
-            </button>
+            <button onClick={stopCapture} style={styles.captureButton}>Stop Capture</button>
           )}
           {videoBlob && !isCapturing && (
-            <button onClick={sendVideoToBackend} style={styles.uploadButton}>
-              Send Video
-            </button>
+            <button onClick={sendVideoToBackend} style={styles.uploadButton}>Send Video</button>
           )}
         </div>
       </div>
@@ -161,24 +154,23 @@ const Stream: React.FC = () => {
   );
 };
 
-// Styles for the page layout, navbar, and profile picture
 const styles = {
   pageContainer: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100vh', // Full screen height
-    backgroundColor: '#f0f4f8', // Light background color
+    height: '100vh',
+    backgroundColor: '#f0f4f8',
   },
   navbar: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '10px 20px',
-    backgroundColor: '#333', // Dark background for navbar
+    backgroundColor: '#333',
     color: 'white',
     position: 'sticky',
     top: 0,
-    zIndex: 1000, // Keep navbar on top
+    zIndex: 1000,
   },
   navLinks: {
     display: 'flex',
@@ -188,42 +180,38 @@ const styles = {
     color: 'white',
     textDecoration: 'none',
     fontSize: '18px',
-    transition: 'color 0.3s',
   },
   signOutButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#ff6347', // Tomato color
+    backgroundColor: '#ff6347',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
-    transition: 'background-color 0.3s',
   },
   captureButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#4caf50', // Green color for capture button
+    backgroundColor: '#4caf50',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
     margin: '10px 0',
-    transition: 'background-color 0.3s',
   },
   uploadButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#2196f3', // Blue color for upload button
+    backgroundColor: '#2196f3',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
     margin: '10px 0',
-    transition: 'background-color 0.3s',
   },
   welcomeMessage: {
-    marginTop: '60px', // To avoid overlap with navbar
+    marginTop: '60px',
     textAlign: 'center',
   },
   videoPlayer: {
@@ -232,7 +220,6 @@ const styles = {
     height: 'auto',
     border: '2px solid #ccc',
     margin: '20px auto',
-    display: 'block',
   },
 };
 
