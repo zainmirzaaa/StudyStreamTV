@@ -1,5 +1,5 @@
 import { db } from '../Keys/FirebaseConfig'; // Import your Firebase config
-import { doc, setDoc, getDocs, collection, query, where } from "firebase/firestore"; // Import necessary Firestore methods
+import { doc, setDoc, getDocs, getDoc, collection, query, where } from "firebase/firestore"; // Import necessary Firestore methods
 
 // Add or update user data in Firestore
 export async function addUserData(email, username) {
@@ -55,6 +55,7 @@ export async function getUsername(email) {
 
     // Get the document snapshot
     const docSnap = await getDoc(docRef);
+    console.log(docSnap)
 
     // Check if the document exists
     if (docSnap.exists()) {

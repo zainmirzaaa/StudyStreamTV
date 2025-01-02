@@ -6,9 +6,17 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/rs/cors"
 )
+
+// Helper function to sanitize username (for security)
+func sanitizeUsername(username string) string {
+	// Replace any potentially dangerous characters (e.g., ".." or "/")
+	return strings.ReplaceAll(username, "..", "")
+}
 
 // Handler for file upload
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +41,9 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Sanitize the username to prevent path traversal
+	username = sanitizeUsername(username)
+
 	// Get the file from the form data
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -47,8 +58,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Define the file path and create the file on the server
-	videoPath := fmt.Sprintf("uploads/%s.webm", username)
+	// Use a UUID for file name to prevent overwriting
+	fileName := fmt.Sprintf("%s-%s.webm", username, uuid.New().String())
+	videoPath := filepath.Join("uploads", fileName)
+
+	// Create the file on the server
 	outFile, err := os.Create(videoPath)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Unable to create file: %v", err), http.StatusInternalServerError)
@@ -64,6 +78,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with success
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "File uploaded successfully for user: %s", username)
 }
 
@@ -72,9 +87,13 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract the username from the URL
 	username := r.URL.Path[len("/video/"):]
 
+	// Sanitize the username
+	username = sanitizeUsername(username)
+
 	// Define the video file path
 	videoPath := filepath.Join("uploads", fmt.Sprintf("%s.webm", username))
-	log.Println(videoPath)
+	log.Println("Serving video:", videoPath)
+
 	// Check if the file exists
 	if _, err := os.Stat(videoPath); os.IsNotExist(err) {
 		http.Error(w, "Video not found", http.StatusNotFound)
