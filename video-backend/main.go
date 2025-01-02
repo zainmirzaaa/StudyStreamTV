@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/rs/cors"
 )
 
+// Handler for file upload
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure the method is POST
 	if r.Method != http.MethodPost {
@@ -55,7 +57,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	defer outFile.Close()
 
 	// Copy the uploaded file to the new file
-	_, err = outFile.Write([]byte{}) // Fix this line: Use Write() to save the content
+	_, err = outFile.ReadFrom(file)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error saving the file: %v", err), http.StatusInternalServerError)
 		return
@@ -65,9 +67,28 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "File uploaded successfully for user: %s", username)
 }
 
+// Handler to serve video based on username
+func videoHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the username from the URL
+	username := r.URL.Path[len("/video/"):]
+
+	// Define the video file path
+	videoPath := filepath.Join("uploads", fmt.Sprintf("%s.webm", username))
+	log.Println(videoPath)
+	// Check if the file exists
+	if _, err := os.Stat(videoPath); os.IsNotExist(err) {
+		http.Error(w, "Video not found", http.StatusNotFound)
+		return
+	}
+
+	// Serve the video file
+	http.ServeFile(w, r, videoPath)
+}
+
 func main() {
 	// Set up the routes
-	http.HandleFunc("/upload", uploadHandler)
+	http.HandleFunc("/upload", uploadHandler) // Handle file uploads
+	http.HandleFunc("/video/", videoHandler)  // Handle video requests based on username
 
 	// Set up CORS to allow all origins (for development purposes)
 	corsHandler := cors.New(cors.Options{
