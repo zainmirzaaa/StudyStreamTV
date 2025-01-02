@@ -9,15 +9,38 @@ function CreateAccountPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleClick = (action: string, email: string, username: string, password: string) => {
+  const isValidPassword = (password: string) => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+    return passwordRegex.test(password); // Check if password meets criteria
+  };
+
+  
+
+  const handleClick = async (action: string, email: string, username: string, password: string) => {
     switch (action) {
       case 'createAccount':
+
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+      if (!isValidPassword(password)) {
+        alert('Password must be at least 6 characters and contain both letters and numbers.');
+        return;
+      }
         if (password === confirmPassword) {
-          // Here you can handle the actual account creation logic (e.g., calling an API)
-          createUser(email, username, password);
-        
-          navigate('/home'); // Navigate to sign-in page after account creation
+          setIsLoading(true);
+          // Wait for the API response
+          const apiResponse = await createUser(email, username, password);
+          console.log(apiResponse);
+          setIsLoading(false);
+  
+          if (apiResponse !== "not allowed") {
+            navigate('/home'); // Navigate after successful account creation
+          }
         } else {
           alert('Passwords do not match');
         }
@@ -27,12 +50,13 @@ function CreateAccountPage() {
         break;
       case 'skipLogin':
         alert('Skipping login');
-        navigate('/home')
+        navigate('/home');
         break;
       default:
         break;
     }
   };
+  
 
   return (
     <div className="create-account-page">

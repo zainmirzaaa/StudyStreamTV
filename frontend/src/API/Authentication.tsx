@@ -5,16 +5,21 @@ import { addUserData } from "./Firestore.js";
 // Create User function - Async with await
 export async function createUser(email: string, username: string, password: string) {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    addUserData(email, username);
-    const user = userCredential.user;
-    console.log("User created successfully:", user);
-    return user; // Return the created user object
+    const response = addUserData(email, username);
+    console.log(response)
+    if(response != "not allowed"){
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("User created successfully:", user);
+      return user; // Return the created user object
+    }else{
+      return "not allowed";
+    }
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
     console.error(`Error: ${errorCode} - ${errorMessage}`);
-    throw error; // Propagate the error
+    return "not allowed";
   }
 }
 
