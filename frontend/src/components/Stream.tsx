@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { signOutUser } from '../API/Authentication';
 import { useAuth } from '../Context/AuthContext';
 import { getUsername } from '../API/Firestore.js';
-
+import NavBar from './Navbar.js';
 const Stream: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuth(); // Get the user context
@@ -105,14 +105,7 @@ const Stream: React.FC = () => {
 
   return (
     <div style={styles.pageContainer}>
-      <nav style={styles.navbar}>
-        <div style={styles.navLinks}>
-          <a href="/profile" style={styles.navLink}>Profile</a>
-          <a href="/stream" style={styles.navLink}>Stream</a>
-          <a href="/watch" style={styles.navLink}>Watch</a>
-        </div>
-        <button onClick={handleSignOut} style={styles.signOutButton}>Logout</button>
-      </nav>
+      <NavBar/>
 
       <div style={styles.welcomeMessage}>
         <h1>Welcome, {username}!</h1>

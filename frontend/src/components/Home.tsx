@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
 import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
-
+import NavBar from './Navbar';
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
@@ -17,14 +17,7 @@ const Home: React.FC = () => {
 
   return (
     <div style={styles.pageContainer}>
-      <nav style={styles.navbar}>
-        <div style={styles.navLinks}>
-          <a href="/profile" style={styles.navLink}>Profile</a>
-          <a href="/stream" style={styles.navLink}>Stream</a>
-          <a href="/watch" style={styles.navLink}>Watch</a>
-        </div>
-        <button onClick={handleSignOut} style={styles.signOutButton}>Logout</button>
-      </nav>
+      <NavBar/>
       <div style={styles.contentContainer}>
         <h1>Welcome!</h1>
       </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
 import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
-
+import NavBar from './Navbar'
 const Profile: React.FC = () => {
   const navigate = useNavigate();
 
@@ -15,16 +15,11 @@ const Profile: React.FC = () => {
     }
   };
 
+
   return (
+    
     <div style={styles.pageContainer}>
-      <nav style={styles.navbar}>
-        <div style={styles.navLinks}>
-          <a href="/profile" style={styles.navLink}>Profile</a>
-          <a href="/stream" style={styles.navLink}>Stream</a>
-          <a href="/watch" style={styles.navLink}>Watch</a>
-        </div>
-        <button onClick={handleSignOut} style={styles.signOutButton}>Logout</button>
-      </nav>
+      <NavBar/>
 
       <div style={styles.profileContainer}>
         <div style={styles.profilePictureContainer}>
@@ -39,8 +34,9 @@ const Profile: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
+
 
 // Styles for the page layout, navbar, and profile picture
 const styles = {

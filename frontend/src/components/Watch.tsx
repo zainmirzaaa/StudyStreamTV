@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-
+import NavBar from './Navbar';
 function Watch() {
   const { username } = useParams(); // This will get the dynamic username from the URL
   const [videoUrl, setVideoUrl] = useState<string | null>(null); // State to store video URL
@@ -35,6 +35,7 @@ function Watch() {
 
   return (
     <div>
+      <NavBar/>
       <h1>Profile Page of {username}</h1>
 
       {loading ? (
