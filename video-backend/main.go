@@ -89,7 +89,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Sanitize the username
 	username = sanitizeUsername(username)
-
+	log.Println(username)
 	// Define the video file path
 	videoPath := filepath.Join("uploads", fmt.Sprintf("%s.webm", username))
 	log.Println("Serving video:", videoPath)

@@ -23,6 +23,7 @@ const Stream: React.FC = () => {
         try {
           const fetchedUsername = await getUsername(email);
           setUsername(fetchedUsername);
+          console.log(fetchedUsername)
         } catch (err) {
           console.error('Error fetching username:', err);
           setUsername('john_doe'); // Fallback username in case of error
