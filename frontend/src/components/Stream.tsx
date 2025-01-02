@@ -51,7 +51,9 @@ const Stream: React.FC = () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
+        audio: true, // Capture audio
       });
+      
       videoStreamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
