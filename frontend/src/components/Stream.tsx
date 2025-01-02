@@ -1,46 +1,46 @@
-import React, { useState, useRef } from 'react'; // Import useState and useRef
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
-import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { signOutUser } from '../API/Authentication';
 import { useAuth } from '../Context/AuthContext';
-import {getUsername} from '../API/Firestore.js'
+import { getUsername } from '../API/Firestore.js';
+
 const Stream: React.FC = () => {
   const navigate = useNavigate();
-  const user = useAuth()
-  // Hardcoded username for demonstration
-  let email;
-  let username;
-  if(user.user){
-    email = user.user.email
-    username = getUsername(email);
+  const user = useAuth(); // Get the user context
+  const [username, setUsername] = useState<string>(''); // State for the username
+  const [isCapturing, setIsCapturing] = useState<boolean>(false);
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const videoStreamRef = useRef<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  }else {
-    email = "No email"
-    username = "john_doe";
+  // Fetch the username when user is logged in
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (user.user) {
+        const email = user.user.email;
+        const fetchedUsername = await getUsername(email); // Async call to fetch username
+        setUsername(fetchedUsername);
+      } else {
+        setUsername('john_doe'); // Default username when user is not authenticated
+      }
+    };
+    fetchUsername();
+  }, [user.user]); // Run when the user state changes
 
-  }
-  
-   // Replace this with your actual method of fetching the username
-
-  // Function to handle sign-out and navigate to the sign-in page
+  // Handle sign-out functionality
   const handleSignOut = async () => {
     try {
       await signOutUser(); // Log out the user
-      navigate('/'); // Redirect to the sign-in page
+      navigate('/'); // Navigate to the sign-in page
     } catch (error) {
-      console.error("Error signing out:", error); // Handle any errors during sign-out
+      console.error("Error signing out:", error);
     }
   };
-
-  const [isCapturing, setIsCapturing] = useState<boolean>(false);
-  const [videoBlob, setVideoBlob] = useState<Blob | null>(null); // Correct type for videoBlob
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null); // Type the ref to MediaRecorder
-  const videoStreamRef = useRef<MediaStream | null>(null); // Type the ref to MediaStream
-  const videoRef = useRef<HTMLVideoElement | null>(null); // Type the ref to HTMLVideoElement
 
   // Start screen capture
   const startCapture = async () => {
     try {
-      // Request screen capture
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
       });
@@ -50,12 +50,11 @@ const Stream: React.FC = () => {
       }
       setIsCapturing(true);
 
-      // Create MediaRecorder to record the stream
       mediaRecorderRef.current = new MediaRecorder(stream);
       const chunks: Blob[] = [];
 
       mediaRecorderRef.current.ondataavailable = (e: BlobEvent) => {
-        chunks.push(e.data); // Correct type for event
+        chunks.push(e.data);
       };
 
       mediaRecorderRef.current.onstop = () => {
@@ -63,7 +62,6 @@ const Stream: React.FC = () => {
         setVideoBlob(blob);
       };
 
-      // Start recording
       mediaRecorderRef.current.start();
     } catch (err) {
       console.error("Error accessing screen media:", err);
@@ -87,6 +85,7 @@ const Stream: React.FC = () => {
       const formData = new FormData();
       formData.append('file', videoBlob, 'capture.webm');
       formData.append('username', username); // Add the username to the FormData
+
       try {
         const response = await fetch('http://localhost:8080/upload', {
           method: 'POST',
@@ -108,44 +107,25 @@ const Stream: React.FC = () => {
     <div style={styles.pageContainer}>
       <nav style={styles.navbar}>
         <div style={styles.navLinks}>
-          <a href="/profile" style={styles.navLink}>
-            Profile
-          </a>
-          <a href="/stream" style={styles.navLink}>
-            Stream
-          </a>
-          <a href="/watch" style={styles.navLink}>
-            Watch
-          </a>
+          <a href="/profile" style={styles.navLink}>Profile</a>
+          <a href="/stream" style={styles.navLink}>Stream</a>
+          <a href="/watch" style={styles.navLink}>Watch</a>
         </div>
-        <button onClick={handleSignOut} style={styles.signOutButton}>
-          Logout
-        </button>
+        <button onClick={handleSignOut} style={styles.signOutButton}>Logout</button>
       </nav>
 
       <div style={styles.welcomeMessage}>
-        <h1>Welcome!</h1>
+        <h1>Welcome, {username}!</h1>
         <h2>Screen Capture</h2>
         <div>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            style={styles.videoPlayer}
-          ></video>
+          <video ref={videoRef} autoPlay muted style={styles.videoPlayer}></video>
           {!isCapturing ? (
-            <button onClick={startCapture} style={styles.captureButton}>
-              Start Capture
-            </button>
+            <button onClick={startCapture} style={styles.captureButton}>Start Capture</button>
           ) : (
-            <button onClick={stopCapture} style={styles.captureButton}>
-              Stop Capture
-            </button>
+            <button onClick={stopCapture} style={styles.captureButton}>Stop Capture</button>
           )}
           {videoBlob && !isCapturing && (
-            <button onClick={sendVideoToBackend} style={styles.uploadButton}>
-              Send Video
-            </button>
+            <button onClick={sendVideoToBackend} style={styles.uploadButton}>Send Video</button>
           )}
         </div>
       </div>
@@ -158,19 +138,19 @@ const styles = {
   pageContainer: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100vh', // Full screen height
-    backgroundColor: '#f0f4f8', // Light background color
+    height: '100vh',
+    backgroundColor: '#f0f4f8',
   },
   navbar: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '10px 20px',
-    backgroundColor: '#333', // Dark background for navbar
+    backgroundColor: '#333',
     color: 'white',
     position: 'sticky',
     top: 0,
-    zIndex: 1000, // Keep navbar on top
+    zIndex: 1000,
   },
   navLinks: {
     display: 'flex',
@@ -185,7 +165,7 @@ const styles = {
   signOutButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#ff6347', // Tomato color
+    backgroundColor: '#ff6347',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
@@ -195,7 +175,7 @@ const styles = {
   captureButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#4caf50', // Green color for capture button
+    backgroundColor: '#4caf50',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
@@ -206,7 +186,7 @@ const styles = {
   uploadButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#2196f3', // Blue color for upload button
+    backgroundColor: '#2196f3',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
@@ -215,7 +195,7 @@ const styles = {
     transition: 'background-color 0.3s',
   },
   welcomeMessage: {
-    marginTop: '60px', // To avoid overlap with navbar
+    marginTop: '60px',
     textAlign: 'center',
   },
   videoPlayer: {
