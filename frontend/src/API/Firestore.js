@@ -1,49 +1,49 @@
 import { db } from '../Keys/FirebaseConfig'; // Import your Firebase config
-import { doc, setDoc, getDocs, getDoc, collection, query, where } from "firebase/firestore"; // Import necessary Firestore methods
+import { doc, setDoc, getDoc, collection, query, where, runTransaction } from "firebase/firestore"; // Import necessary Firestore methods
 
 // Add or update user data in Firestore
 export async function addUserData(email, username) {
   try {
     // Check if the username already exists in the 'usersByUsername' collection
-    const usernameQuery = query(collection(db, "usersByUsername"), where("username", "==", username));
-    const usernameSnapshot = await getDocs(usernameQuery);
+    const usernameDocRef = doc(db, "usersByUsername", username);
+    const usernameDocSnap = await getDoc(usernameDocRef);
 
-    if (!usernameSnapshot.empty) {
+    if (usernameDocSnap.exists()) {
       alert("Username already exists.");
       return "not allowed"; // Exit if the username exists
     }
 
     // Check if the email already exists in the 'usersByEmail' collection
-    const emailQuery = query(collection(db, "usersByEmail"), where("email", "==", email));
-    const emailSnapshot = await getDocs(emailQuery);
+    const emailDocRef = doc(db, "usersByEmail", email);
+    const emailDocSnap = await getDoc(emailDocRef);
 
-    if (!emailSnapshot.empty) {
+    if (emailDocSnap.exists()) {
       alert("Email already exists.");
       return "not allowed"; // Exit if the email exists
     }
 
-    // Create a reference to the 'usersByEmail' collection using the email as the document ID
-    const emailDocRef = doc(db, "usersByEmail", email);
+    // Use Firestore transaction to handle both writes atomically
+    await runTransaction(db, async (transaction) => {
+      // Set data for the 'usersByEmail' collection using the email as the document ID
+      transaction.set(emailDocRef, {
+        email: email,
+        username: username
+      });
 
-    // Set data for the document (this will overwrite the document if it already exists)
-    await setDoc(emailDocRef, {
-      email: email,
-      username: username
+      // Set data for the 'usersByUsername' collection using the username as the document ID
+      transaction.set(usernameDocRef, {
+        email: email,
+        username: username
+      });
     });
-    console.log("Document written in usersByEmail with ID: ", email); 
 
-    // Create a reference to the 'usersByUsername' collection using the username as the document ID
-    const usernameDocRef = doc(db, "usersByUsername", username);
-
-    // Set data for the document (this will overwrite the document if it already exists)
-    await setDoc(usernameDocRef, {
-      email: email,
-      username: username
-    });
-    console.log("Document written in usersByUsername with ID: ", username); 
+    console.log("User data added successfully");
+    return "User data added successfully";
 
   } catch (e) {
     console.error("Error adding document: ", e);
+    alert(e.message || "An error occurred. Please try again later.");
+    return "error";
   }
 }
 
@@ -55,10 +55,10 @@ export async function getUsername(email) {
 
     // Get the document snapshot
     const docSnap = await getDoc(docRef);
-    console.log(docSnap)
 
     // Check if the document exists
     if (docSnap.exists()) {
+      
       return docSnap.data().username; // Return the username
     } else {
       return "No such document!";

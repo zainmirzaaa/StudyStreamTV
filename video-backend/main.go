@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/rs/cors"
 )
 
@@ -18,6 +17,7 @@ func sanitizeUsername(username string) string {
 	return strings.ReplaceAll(username, "..", "")
 }
 
+// Handler for file upload
 // Handler for file upload
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure the method is POST
@@ -58,11 +58,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use a UUID for file name to prevent overwriting
-	fileName := fmt.Sprintf("%s-%s.webm", username, uuid.New().String())
+	// Use the username as the filename and overwrite any existing file
+	fileName := fmt.Sprintf("%s.webm", username) // No UUID, just use the username
 	videoPath := filepath.Join("uploads", fileName)
 
-	// Create the file on the server
+	// Create or open the file on the server (this will overwrite the existing file)
 	outFile, err := os.Create(videoPath)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Unable to create file: %v", err), http.StatusInternalServerError)
@@ -70,7 +70,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer outFile.Close()
 
-	// Copy the uploaded file to the new file
+	// Copy the uploaded file to the new file (this will overwrite the existing file)
 	_, err = outFile.ReadFrom(file)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error saving the file: %v", err), http.StatusInternalServerError)
