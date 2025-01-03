@@ -1,34 +1,34 @@
-
-# imports
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
 
-# function to find .env file
+# Load environment variables from the .env file
 load_dotenv()
 
-
-# retrieve uri from .env
+# Retrieve the MongoDB URI from the environment variables
 MONGODB_URI = os.getenv('MONGODB_URI')
 
-# client is how we interact with mongos db
-client = MongoClient(MONGODB_URI)
+# Check if the URI is loaded properly
+if not MONGODB_URI:
+    print("MONGODB_URI not found in .env file!")
+    exit(1)
 
-# naming our db and collections
-db = client['db']
-collection = db['collectionssss']
+# Use MongoClient to connect to MongoDB
+try:
+    # Establish MongoDB connection
+    with MongoClient(MONGODB_URI) as client:
+        print("Successfully connected to MongoDB")
 
-# u have to insert info in json format
-mydoc = { 
-    "name" : "zain",
-    "food" : "chicken"
-}
+        # Access the database and collection
+        db = client['trial']
+        collection = db['test']
 
-# instering the info into the collection
-insert_doc = collection.insert_one(mydoc)
+        # Document to insert
+        mydoc = { "name": "zain", "food": "chicken" }
 
-# validation check
-print("successful")
+        # Insert the document into the collection
+        collection.insert_one(mydoc)
+        print("Document inserted successfully!")
 
-# always have to close the client session
-client.close()
+except Exception as e:
+    print(f"An error occurred: {e}")
