@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUser } from '../API/Authentication';
+import {addToMongoDB} from '../API/backendAPI'
 
 function CreateAccountPage() {
   const [email, setEmail] = useState('');
@@ -37,7 +38,7 @@ function CreateAccountPage() {
           const apiResponse = await createUser(email, username, password);
           console.log(apiResponse);
           setIsLoading(false);
-  
+          addToMongoDB(username, email)
           if (apiResponse !== "not allowed") {
             navigate('/home'); // Navigate after successful account creation
           }

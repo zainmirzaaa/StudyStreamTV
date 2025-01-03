@@ -1,19 +1,21 @@
 # views.py
+import json
 from django.http import JsonResponse
+from api.mongoAPI import addUser
 
-def my_json_view(request):
+def user(request):
     # Data to be returned as JSON
     if request.method == 'GET':
-        return getMethod()
+        return getMethod(request)
     elif request.method == 'POST':
-        return postMethod()
+        return postMethod(request)
     elif request.method =='PUT':
-        return putMethod()
+        return putMethod(request)
     elif request.method == 'DELETE':
-        return deleteMethod()
+        return deleteMethod(request)
 
 
-def getMethod():
+def getMethod(request):
     data = {
             "status": "success",
             "message": "This is a JSON response from a normal view",
@@ -27,7 +29,17 @@ def getMethod():
         # Return data as JSON
     return JsonResponse(data)
 
-def postMethod():
+def postMethod(request):
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        email = data.get('email')
+        addUser(username=username, email=email)
+        return JsonResponse({"status": "User added successfully"})
+    except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+
+def putMethod(request):
     data = {
             "status": "success",
             "message": "This is a JSON response from a normal view",
@@ -41,22 +53,8 @@ def postMethod():
         # Return data as JSON
     return JsonResponse(data)
 
-def putMethod():
-    data = {
-            "status": "success",
-            "message": "This is a JSON response from a normal view",
-            "data": {
-                "id": 1,
-                "name": "Sample Item",
-                "description": "This is a sample item."
-            }
-        }
-    
-        # Return data as JSON
-    return JsonResponse(data)
 
-
-def deleteMethod():
+def deleteMethod(request):
     data = {
                 "status": "success",
                 "message": "This is a JSON response from a normal view",

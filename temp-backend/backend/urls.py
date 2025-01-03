@@ -1,9 +1,9 @@
 # blog/urls.py
 from django.urls import path
-from .views.home import my_json_view
+from views.user import user
 
 
 urlpatterns = [
-    path('', my_json_view, name='homepage'),
+    path('', user, name='homepage'),
     
 ]
