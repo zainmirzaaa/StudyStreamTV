@@ -18,7 +18,6 @@ func sanitizeUsername(username string) string {
 }
 
 // Handler for file upload
-// Handler for file upload
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure the method is POST
 	if r.Method != http.MethodPost {
@@ -59,7 +58,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use the username as the filename and overwrite any existing file
-	fileName := fmt.Sprintf("%s.webm", username) // No UUID, just use the username
+	fileName := fmt.Sprintf("%s.webm", username)
 	videoPath := filepath.Join("uploads", fileName)
 
 	// Create or open the file on the server (this will overwrite the existing file)
@@ -90,6 +89,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	// Sanitize the username
 	username = sanitizeUsername(username)
 	log.Println(username)
+
 	// Define the video file path
 	videoPath := filepath.Join("uploads", fmt.Sprintf("%s.webm", username))
 	log.Println("Serving video:", videoPath)

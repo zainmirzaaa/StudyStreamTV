@@ -75,12 +75,13 @@ const Stream: React.FC = () => {
 
       // Start recording
       mediaRecorderRef.current.start();
-
+      console.log("here")
       // Send video every 10 seconds
       const intervalId = setInterval(() => {
         if (chunks.length > 0) {
           sendVideoToBackend();
           setChunks([]); // Clear chunks after sending
+          console.log("heres")
         }
       }, 10000); // 10 seconds interval
 
