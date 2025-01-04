@@ -36,3 +36,22 @@ def addUser(username, email):
         collection = db['Users']
         mydoc = { "username":username ,"email": email }
         collection.insert_one(mydoc)
+
+
+
+def addLiveUser(username, category, description):
+    client=get_mongo_client()
+    if client:
+        db = client['UserData']
+        collection = db['liveUser']
+        mydoc = { "username":username ,"category": category, "description": description }
+        collection.insert_one(mydoc)
+
+
+def removeLiveUser(username, category, description):
+    client=get_mongo_client()
+    if client:
+        db = client['UserData']
+        collection = db['liveUser']
+        mydoc = { "username":username ,"category": category, "description": description }
+        collection.insert_one(mydoc)

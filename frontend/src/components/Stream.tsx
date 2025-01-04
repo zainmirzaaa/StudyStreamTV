@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { signOutUser } from '../API/Authentication'; 
 import { useAuth } from '../Context/AuthContext';
 import { getUsername } from '../API/Firestore.js';
+import {addLiveUser, removeLiveUser}from '../API/backendAPI.js'
 
 const Stream: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,9 @@ const Stream: React.FC = () => {
   const videoStreamRef = useRef<MediaStream | null>(null); // Type the ref to MediaStream
   const videoRef = useRef<HTMLVideoElement | null>(null); // Type the ref to HTMLVideoElement
   const [chunks, setChunks] = useState<Blob[]>([]); // Store chunks as state
+  const [showForm, setShowForm] = useState<boolean>(false); // To toggle form visibility
+  const [category, setCategory] = useState<string>(''); // Store first question answer (multiple choice)
+  const [description, setDescription] = useState<string>(''); // Store second question answer (free response)
 
   // Fetch username when user is authenticated
   useEffect(() => {
@@ -23,7 +27,6 @@ const Stream: React.FC = () => {
         try {
           const fetchedUsername = await getUsername(email);
           setUsername(fetchedUsername);
-          
         } catch (err) {
           console.error('Error fetching username:', err);
           setUsername('john_doe'); // Fallback username in case of error
@@ -48,6 +51,14 @@ const Stream: React.FC = () => {
 
   // Start screen capture
   const startCapture = async () => {
+  
+    
+    // If form is not submitted, don't start capture
+    if (!category || !description) {
+      console.log('Please answer both questions before starting the capture.');
+      return;
+    }
+    addLiveUser(username, category, description)
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
@@ -75,13 +86,14 @@ const Stream: React.FC = () => {
 
       // Start recording
       mediaRecorderRef.current.start();
-      console.log("here")
+      console.log("here");
+
       // Send video every 10 seconds
       const intervalId = setInterval(() => {
         if (chunks.length > 0) {
           sendVideoToBackend();
           setChunks([]); // Clear chunks after sending
-          console.log("heres")
+          console.log("heres");
         }
       }, 10000); // 10 seconds interval
 
@@ -94,6 +106,7 @@ const Stream: React.FC = () => {
 
   // Stop screen capture
   const stopCapture = () => {
+    removeLiveUser(username, category, description)
     if (videoStreamRef.current) {
       videoStreamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -128,6 +141,13 @@ const Stream: React.FC = () => {
     }
   };
 
+  // Handle form submission
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setShowForm(false); // Hide form after submission
+    startCapture(); // Start capture after form submission
+  };
+
   return (
     <div style={styles.pageContainer}>
       <nav style={styles.navbar}>
@@ -142,17 +162,40 @@ const Stream: React.FC = () => {
       <div style={styles.welcomeMessage}>
         <h1>Welcome, {username}!</h1>
         <h2>Screen Capture</h2>
-        <div>
-          <video ref={videoRef} autoPlay muted style={styles.videoPlayer}></video>
-          {!isCapturing ? (
-            <button onClick={startCapture} style={styles.captureButton}>Start Capture</button>
-          ) : (
-            <button onClick={stopCapture} style={styles.captureButton}>Stop Capture</button>
-          )}
-          {videoBlob && !isCapturing && (
-            <button onClick={sendVideoToBackend} style={styles.uploadButton}>Send Video</button>
-          )}
-        </div>
+        
+        {/* Form display */}
+        {showForm ? (
+          <form onSubmit={handleFormSubmit} style={styles.form}>
+            <label>
+              Question 1 (Multiple Choice):
+              <select value={category} onChange={(e) => setCategory(e.target.value)} required>
+                <option value="">Select an option</option>
+                <option value="Option A">Option A</option>
+                <option value="Option B">Option B</option>
+                <option value="Option C">Option C</option>
+              </select>
+            </label>
+            <br />
+            <label>
+              Question 2 (Free Response):
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+            </label>
+            <br />
+            <button type="submit" style={styles.submitButton}>Submit</button>
+          </form>
+        ) : (
+          <>
+            <video ref={videoRef} autoPlay muted style={styles.videoPlayer}></video>
+            {!isCapturing ? (
+              <button onClick={() => setShowForm(true)} style={styles.captureButton}>Start Capture</button>
+            ) : (
+              <button onClick={stopCapture} style={styles.captureButton}>Stop Capture</button>
+            )}
+            {videoBlob && !isCapturing && (
+              <button onClick={sendVideoToBackend} style={styles.uploadButton}>Send Video</button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -197,33 +240,42 @@ const styles = {
   captureButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#4caf50',
+    backgroundColor: '#4CAF50',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
-    margin: '10px 0',
   },
   uploadButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#2196f3',
+    backgroundColor: '#008CBA',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
-    margin: '10px 0',
   },
   welcomeMessage: {
-    marginTop: '60px',
     textAlign: 'center',
+    marginTop: '50px',
   },
   videoPlayer: {
-    width: '100%',
-    maxWidth: '600px',
-    height: 'auto',
-    border: '2px solid #ccc',
+    width: '80%',
     margin: '20px auto',
+    border: '2px solid #ccc',
+  },
+  form: {
+    textAlign: 'center',
+    marginTop: '20px',
+  },
+  submitButton: {
+    padding: '10px 20px',
+    fontSize: '16px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
   },
 };
 
