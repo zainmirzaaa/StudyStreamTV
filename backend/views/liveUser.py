@@ -29,7 +29,8 @@ def getMethod(request):
         # Return data as JSON
     return JsonResponse(data)
 
-def postMethod(request):
+#This is the add method
+def putMethod(request):
     try:
         data = json.loads(request.body)
         username = data.get('username')
@@ -40,7 +41,8 @@ def postMethod(request):
     except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
 
-def putMethod(request):
+#this is the delete method
+def postMethod(request):
     try: 
         print("first")
         data = json.loads(request.body)

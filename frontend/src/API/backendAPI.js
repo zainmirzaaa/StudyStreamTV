@@ -12,7 +12,7 @@ export function addToMongoDB(username, email){
 
 export function addLiveUser(username, category, description){
 
-    axios.post('http://127.0.0.1:8000/liveUser',{
+    axios.put('http://127.0.0.1:8000/liveUser',{
         username: username,
         category: category,
         description: description,
@@ -20,9 +20,10 @@ export function addLiveUser(username, category, description){
     console.log("added live user")
 }
 
+
 export function removeLiveUser(username, category, description){
     
-    axios.put('http://127.0.0.1:8000/liveUser',{
+    axios.post('http://127.0.0.1:8000/liveUser',{
         username: username,
         category: category,
         description: description,
