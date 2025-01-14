@@ -49,9 +49,13 @@ def addLiveUser(username, category, description):
 
 
 def removeLiveUser(username, category, description):
-    client=get_mongo_client()
+    client = get_mongo_client()
     if client:
         db = client['UserData']
         collection = db['liveUser']
-        mydoc = { "username":username ,"category": category, "description": description }
-        collection.insert_one(mydoc)
+        mydoc = { "username": username, "category": category, "description": description }
+        result = collection.delete_one(mydoc)
+        if result.deleted_count > 0:
+            print(f"Successfully removed user: {username}")
+        else:
+            print(f"No user found with the specified details.")
