@@ -1,17 +1,17 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
-// Define the shape of the user object (you can adjust this type according to your API response)
+// Define the shape of the user object
 interface User {
   username: string;
   email: string;
-  categoriesWatched: string[]; // Array of categories the user has watched
+  categoriesWatched: string[];
   description: string;
-  followers: string[]; // Array of usernames who follow the user
-  following: string[]; // Array of usernames that the user is following
-  hoursWatched: number[]; // Array of numbers representing hours watched (perhaps by category or stream)
-  links: string[]; // Array of links (URLs)
-  pastStreams: string[]; // Array of past streams
-  previousWatchedStreams: string[]; // Array of previously watched streams
+  followers: string[];
+  following: string[];
+  hoursWatched: number[];
+  links: string[];
+  pastStreams: string[];
+  previousWatchedStreams: string[];
 }
 
 // Define the context value type
@@ -20,7 +20,7 @@ interface UserContextType {
   updateUser: (newUserData: User) => void;
 }
 
-// Create the context with a default value of null for user and a placeholder function for updateUser
+// Create the context with a default value
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Custom hook to access the UserContext
@@ -32,7 +32,7 @@ export const useUser = (): UserContextType => {
   return context;
 };
 
-// UserContext Provider component
+// UserProvider component
 interface UserProviderProps {
   children: ReactNode;
 }
@@ -41,18 +41,15 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const updateUser = (newUserData: User): void => {
-    setUser(newUserData);  // Set the user data in the context
-    console.log("User data set:", newUserData);
-    
+    setUser(newUserData); // Update the user context
+    console.log('User data set:', newUserData);
   };
 
-  // Use useEffect to log user whenever it changes
+  // Log whenever the user state changes
   useEffect(() => {
-    if (user) {
-      console.log("User state updated:", user);
-    }
-  }, [user]); // This effect will run whenever 'user' changes
-  
+    console.log('User state updated in UserProvider:', user);
+  }, [user]);
+
   return (
     <UserContext.Provider value={{ user, updateUser }}>
       {children}

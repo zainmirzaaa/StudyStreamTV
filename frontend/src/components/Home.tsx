@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for page navigation
-import { signOutUser } from '../API/Authentication'; // Import the signOutUser function
+import { useNavigate } from 'react-router-dom';
+import { signOutUser } from '../API/Authentication';
 import NavBar from './Navbar';
 import { useAuth } from '../Context/AuthContext';
 import { getUsername } from '../API/Firestore';
@@ -9,59 +9,76 @@ import { useUser } from '../Context/UserContext';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { user: authUser } = useAuth(); // Get user from AuthContext
-  const { updateUser } = useUser(); // Get updateUser from UserContext
-  const [username, setUsername] = useState<string>('');
+  const { user: authUser } = useAuth(); // Access auth context
+  const { user, updateUser } = useUser(); // Access user context
+  const [username, setUsername] = useState<string>(''); // Local username state
+  const [loading, setLoading] = useState<boolean>(true); // Loading state
 
   // Function to handle sign-out and navigate to the sign-in page
   const handleSignOut = async () => {
     try {
       await signOutUser(); // Log out the user
-      navigate('/'); // Redirect to the sign-in page
+      navigate('/'); // Redirect to sign-in
     } catch (error) {
-      console.error("Error signing out:", error); // Handle any errors during sign-out
+      console.error('Error signing out:', error);
     }
   };
 
-  // Use useEffect to fetch username and update the context
+  // Fetch username and user data
   useEffect(() => {
     const fetchUsername = async () => {
-      if (authUser?.email && !username) { // Only fetch if there's an email and username is not already set
+      if (authUser?.email && !username) {
         try {
-          // Fetch the username based on email
-          console.log("Fetching username for email:", authUser.email);
+          console.log('Fetching username for email:', authUser.email);
           const fetchedUsername = await getUsername(authUser.email);
-          console.log("Fetched username:", fetchedUsername);
+          console.log('Fetched Username:', fetchedUsername);
 
-          // Set the username in the local state
           setUsername(fetchedUsername);
 
-          // Fetch full user data (using the username) and update UserContext
-          const userData = await getOnSignIn(fetchedUsername); // Assuming getOnSignIn returns the full user data
-          console.log(userData);
-          updateUser(userData); // Update UserContext with the new user data
-          
-        } catch (err) {
-          console.error('Error fetching username:', err);
-          setUsername('john_doe'); // Fallback username in case of error
+          // Fetch full user data and update context
+          const userData = await getOnSignIn(fetchedUsername);
+          console.log('User Data from API:', userData);
+
+          updateUser(userData); // Update context with user data
+        } catch (error) {
+          console.error('Error fetching username or user data:', error);
+          setUsername('john_doe'); // Fallback username
+        } finally {
+          setLoading(false); // Stop loading regardless of success or error
         }
-      } else {
-        // If authUser is available but username is already set, skip fetching
-        if (username) {
-          console.log("Username already fetched, skipping API call.");
-        }
+      } else if (username) {
+        console.log('Username already fetched, skipping API call.');
+        setLoading(false);
       }
     };
 
     fetchUsername();
-  }, [authUser, username, updateUser]); // Add `username` as a dependency to avoid continuous fetching
+  }, [authUser, username, updateUser]);
+
+  // Log user whenever it changes
+  useEffect(() => {
+    if (user) {
+      console.log('User in Home component:', user);
+    }
+  }, [user]);
+
+  if (loading) {
+    return <p>Loading user data...</p>;
+  }
 
   return (
     <div style={styles.pageContainer}>
       <NavBar />
       <div style={styles.contentContainer}>
-        <h1>Welcome, {username}!</h1>
-        <button style={styles.signOutButton} onClick={handleSignOut}>Sign Out</button>
+        <h1>Welcome, {username || 'Guest'}!</h1>
+        {user && (
+          <p>
+            Logged in as: {user.username} ({user.email})
+          </p>
+        )}
+        <button style={styles.signOutButton} onClick={handleSignOut}>
+          Sign Out
+        </button>
       </div>
     </div>
   );
@@ -72,23 +89,12 @@ const styles = {
   pageContainer: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100vh', // Full screen height
-    backgroundColor: '#f0f4f8', // Light background color
-  },
-  navbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '10px 20px',
-    backgroundColor: '#333', // Dark background for navbar
-    color: 'white',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000, // Keep navbar on top
+    height: '100vh',
+    backgroundColor: '#f0f4f8',
   },
   contentContainer: {
     textAlign: 'center',
-    marginTop: '60px', // To ensure content isn't hidden under the navbar
+    marginTop: '60px',
     backgroundColor: 'white',
     padding: '20px',
     borderRadius: '8px',
@@ -97,7 +103,7 @@ const styles = {
   signOutButton: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#ff6347', // Tomato color
+    backgroundColor: '#ff6347',
     color: 'white',
     border: 'none',
     borderRadius: '5px',

@@ -4,8 +4,11 @@ import { signOutUser } from '../API/Authentication';
 import { useAuth } from '../Context/AuthContext';
 import { getUsername } from '../API/Firestore.js';
 import {addLiveUser, removeLiveUser}from '../API/backendAPI.js'
+import {useUser} from '../Context/UserContext.js'
 
 const Stream: React.FC = () => {
+  const {user: currUser} = useUser();
+  console.log(currUser)
   const navigate = useNavigate();
   const user = useAuth(); // Get user context
   const [username, setUsername] = useState<string>(''); // Store the username in state

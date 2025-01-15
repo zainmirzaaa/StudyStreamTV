@@ -7,10 +7,11 @@ import {UserProvider} from '../src/Context/UserContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <UserProvider>
+   
     <AuthProvider>
+    <UserProvider>
     <App />
+    </UserProvider>,
   </AuthProvider>,
-  </UserProvider>,
   </StrictMode>,
 )
