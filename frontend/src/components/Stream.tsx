@@ -167,17 +167,21 @@ const Stream: React.FC = () => {
         {showForm ? (
           <form onSubmit={handleFormSubmit} style={styles.form}>
             <label>
-              Question 1 (Multiple Choice):
+              Please Select a category for this Stream:
               <select value={category} onChange={(e) => setCategory(e.target.value)} required>
                 <option value="">Select an option</option>
-                <option value="Option A">Option A</option>
-                <option value="Option B">Option B</option>
-                <option value="Option C">Option C</option>
+                <option value="Math">Math</option>
+                <option value="English">English</option>
+                <option value="History">History</option>
+                <option value="Calculus">Calculus</option>
+                <option value="Geometry">Geometry</option>
+                <option value="Programming">Programming</option>
+                <option value="Other">Other</option>
               </select>
             </label>
             <br />
             <label>
-              Question 2 (Free Response):
+              Please enter a description for this stream::
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
             </label>
             <br />

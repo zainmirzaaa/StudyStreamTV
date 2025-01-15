@@ -69,12 +69,12 @@ def createUserInDB(username, email):
         mydoc = { 
             "username": username, 
             "email": email,
-            "followers": 0,
-            "following": 0,
+            "followers": [],
+            "following": [],
             "description": "",
             "links": [],
             "pastStreams": [],
-            "hoursWatched": 0,
+            "hoursWatched": [],
             "previousWatchedStream": [],
             "categoriesWatched": []
         }
