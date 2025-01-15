@@ -1,10 +1,17 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 // Define the shape of the user object (you can adjust this type according to your API response)
 interface User {
   username: string;
   email: string;
-  // Add other properties based on the actual user data
+  categoriesWatched: string[]; // Array of categories the user has watched
+  description: string;
+  followers: string[]; // Array of usernames who follow the user
+  following: string[]; // Array of usernames that the user is following
+  hoursWatched: number[]; // Array of numbers representing hours watched (perhaps by category or stream)
+  links: string[]; // Array of links (URLs)
+  pastStreams: string[]; // Array of past streams
+  previousWatchedStreams: string[]; // Array of previously watched streams
 }
 
 // Define the context value type
@@ -35,9 +42,17 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   const updateUser = (newUserData: User): void => {
     setUser(newUserData);  // Set the user data in the context
-    console.log(newUserData);  // Optionally log the updated user data
+    console.log("User data set:", newUserData);
+    
   };
 
+  // Use useEffect to log user whenever it changes
+  useEffect(() => {
+    if (user) {
+      console.log("User state updated:", user);
+    }
+  }, [user]); // This effect will run whenever 'user' changes
+  
   return (
     <UserContext.Provider value={{ user, updateUser }}>
       {children}
