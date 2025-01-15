@@ -52,14 +52,16 @@ export async function getUsername(email) {
   try {
     // Create a reference to the document using the email as the document ID
     const docRef = doc(db, "usersByEmail", email);
-
+    
     // Get the document snapshot
     const docSnap = await getDoc(docRef);
 
     // Check if the document exists
     if (docSnap.exists()) {
+
       
       return docSnap.data().username; // Return the username
+
     } else {
       return "No such document!";
     }

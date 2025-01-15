@@ -1,7 +1,7 @@
 # views.py
 import json
 from django.http import JsonResponse
-from api.mongoAPI import addUser
+from api.mongoAPI import createUserInDB, getUserInDB
 
 def user(request):
     # Data to be returned as JSON
@@ -16,6 +16,11 @@ def user(request):
 
 
 def getMethod(request):
+    username = request.GET.get('username')
+    print(username)
+    return getUserInDB(username)
+
+
     data = {
             "status": "success",
             "message": "This is a JSON response from a normal view",
@@ -34,7 +39,7 @@ def postMethod(request):
         data = json.loads(request.body)
         username = data.get('username')
         email = data.get('email')
-        addUser(username=username, email=email)
+        createUserInDB(username=username, email=email)
         return JsonResponse({"status": "User added successfully"})
     except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
