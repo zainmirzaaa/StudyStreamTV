@@ -46,10 +46,28 @@ export function addLiveUser(username, category, description){
 
 export function removeLiveUser(username, category, description){
     
-    axios.post('http://127.0.0.1:8000/liveUser',{
-        username: username,
-        category: category,
-        description: description,
+    axios.put('http://127.0.0.1:8000/liveUser',{
+        userFollower: userFollower,
+        userFollowing: userFollowing,
     })
-    console.log("removed live user")
+    console.log("added follower and following")
+}
+
+export function addFollowing(userFollower, userFollowing){
+    console.log(userFollower)
+    console.log(userFollowing)
+    axios.put('http://127.0.0.1:8000/followers',{
+        userFollower: userFollower,
+        userFollowing: userFollowing,
+    })
+    console.log("added follower and following")
+}
+
+export function removeFollowing(userFollower, userFollowing){
+    // userFollower is following userFollowing
+    axios.post('http://127.0.0.1:8000/followers',{
+        userFollower: userFollower,
+        userFollowing: userFollowing,
+    })
+    console.log("removed follower and following")
 }

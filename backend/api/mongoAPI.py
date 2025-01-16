@@ -102,3 +102,59 @@ def getUserInDB(username):
     else:
         return None
 
+
+
+def addFollower(follower, following):
+    client = get_mongo_client()
+    db = client['UserData']
+    collection = db['UserData']
+    follower = sanitize_username(follower)
+    following = sanitize_username(following)
+    #follower is following following
+    userFollower = collection.find_one({"username": follower})
+    userFollowing = collection.find_one({"username": following})
+
+    if userFollower and userFollowing:
+        collection.update_one(
+            {"username": following}, 
+            {"$addToSet": {"followers": follower}} 
+        )
+        collection.update_one(
+            {"username": follower},  
+            {"$addToSet": {"following": following}} 
+        )
+
+        return f"{follower} is now following {following}."
+    else:
+        return "One or both users do not exist."
+
+
+
+
+def removeFollower(follower, following):
+    client = get_mongo_client()
+    db = client['UserData']
+    collection = db['UserData']
+    follower = sanitize_username(follower)
+    following = sanitize_username(following)
+
+    userFollower = collection.find_one({"username": follower})
+    userFollowing = collection.find_one({"username": following})
+
+    if userFollower and userFollowing:
+        collection.update_one(
+            {"username": following}, 
+            {"$pull": {"followers": follower}} 
+        )
+        collection.update_one(
+            {"username": follower}, 
+            {"$pull": {"following": following}} 
+        )
+
+        return f"{follower} is no longer following {following}."
+    else:
+        return "One or both users do not exist."
+
+
+
+

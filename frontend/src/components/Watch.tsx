@@ -4,7 +4,8 @@ import NavBar from './Navbar';
 import { useUser } from '../Context/UserContext';
 import { useAuth } from '../Context/AuthContext';
 import { getUsername } from '../API/Firestore';
-import { getOnSignIn } from '../API/backendAPI';
+import { getOnSignIn, addFollowing, removeFollowing} from '../API/backendAPI';
+
 
 function Watch() {
   const { username } = useParams(); // Get dynamic username from URL
@@ -14,6 +15,7 @@ function Watch() {
   const [loading, setLoading] = useState<boolean>(true); // General loading state
   const [isFollowing, setIsFollowing] = useState<boolean>(false); // Follow/unfollow state
   const videoRef = useRef<HTMLVideoElement | null>(null); // Video element ref
+  const [authUsername, setAuthUsername] = useState<string>('no');
 
   // Fetch video from the server
   const fetchVideo = async () => {
@@ -33,14 +35,27 @@ function Watch() {
       console.error('Error fetching video:', error);
     }
   };
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (authUser?.email) {
+        try {
+          const fetchedUsername = await getUsername(authUser.email); // Resolve the Promise
+          setAuthUsername(fetchedUsername); // Update state with resolved value
+        } catch (error) {
+          console.error('Error fetching username:', error);
+        }
+      }
+    };
 
+    fetchUsername(); // Call the function on component mount
+  }, [authUser]);
   // Fetch user information if not already loaded
   const fetchUserData = async () => {
     if (authUser?.email && !user) {
       try {
         console.log('Fetching username for email:', authUser.email);
         const fetchedUsername = await getUsername(authUser.email);
-
+        console.log(authUser.email)
         const userData = await getOnSignIn(fetchedUsername);
         console.log('User Data from API:', userData);
 
@@ -85,7 +100,11 @@ function Watch() {
   const toggleFollow = () => {
     try {
       setIsFollowing((prevState) => !prevState); // Toggle follow state
-
+      if(isFollowing == true && authUsername != "no"){
+        addFollowing(authUsername, username)
+      }else if(isFollowing == false && authUsername != "no"){
+        removeFollowing(authUsername, username)
+      }
       // Update the UserContext
       const updatedFollowing = isFollowing
         ? user?.following.filter((name) => name !== username)
