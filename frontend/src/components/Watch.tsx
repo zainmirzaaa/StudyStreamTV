@@ -24,7 +24,10 @@ function Watch() {
       const response = await fetch(link);
 
       if (!response.ok) {
+        console.log("user is not live")
         throw new Error('Video not found');
+      }else {
+        console.log("user is live")
       }
 
       const blob = await response.blob();
@@ -33,6 +36,7 @@ function Watch() {
       setVideoUrl(newVideoUrl); // Set video URL
     } catch (error) {
       console.error('Error fetching video:', error);
+      console.log("not found")
     }
   };
   useEffect(() => {
@@ -147,7 +151,7 @@ function Watch() {
             marginBottom: '20px',
           }}
         >
-          {isFollowing ? 'Unfollow' : 'Follow'}
+          {isFollowing ? 'Follow' : 'UnFollow'}
         </button>
       )}
 

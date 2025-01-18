@@ -71,3 +71,11 @@ export function removeFollowing(userFollower, userFollowing){
     })
     console.log("removed follower and following")
 }
+
+export function updateDescriptionAndLinks(username, description, links){
+    axios.post('http://127.0.0.1:8000/userData',{
+        username: username,
+        description: description,
+        links: links,
+    })
+}

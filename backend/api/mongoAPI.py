@@ -158,3 +158,18 @@ def removeFollower(follower, following):
 
 
 
+def addDescriptionAndLinks(username, description, links):
+    client = get_mongo_client()
+    db = client['UserData']
+    collection = db['UserData']
+    document = collection.find_one({"username": username})
+    if document:
+        collection.update_one(
+            {"username": username}, 
+            {"$set": {"description": description,"links": links}}
+        )
+        return "Updated Successfully"
+    else: 
+        return "document not found"
+
+
