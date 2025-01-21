@@ -80,3 +80,22 @@ export function updateDescriptionAndLinks(username, description, links){
         links: links,
     })
 }
+
+export async function getLiveUser(username){
+    return axios.post('http://127.0.0.1:8000/liveUserData',{
+        username: username
+    })
+}
+
+export async function addWatchedStream(currUsername, watchedUsername, category, description){
+    console.log(currUsername)
+    console.log(watchedUsername)
+    console.log(category)
+    console.log(description)
+    return axios.put('http://127.0.0.1:8000/liveUserData',{
+        currUsername: currUsername,
+        watchedUsername: watchedUsername,
+        category: category,
+        description: description
+    })
+}

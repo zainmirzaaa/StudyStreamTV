@@ -1,9 +1,9 @@
 # views.py
 import json
 from django.http import JsonResponse
-from api.mongoAPI import createUserInDB, getUserInDB
+from api.mongoAPI import addWatchedStream, getLiveUser
 
-def user(request):
+def liveUserData(request):
     # Data to be returned as JSON
     if request.method == 'GET':
         return getMethod(request)
@@ -16,11 +16,6 @@ def user(request):
 
 
 def getMethod(request):
-    username = request.GET.get('username')
-    print("fwienwep")
-    return getUserInDB(username)
-
-
     data = {
             "status": "success",
             "message": "This is a JSON response from a normal view",
@@ -38,22 +33,24 @@ def postMethod(request):
     try:
         data = json.loads(request.body)
         username = data.get('username')
-        email = data.get('email')
-        createUserInDB(username=username, email=email)
+        return getLiveUser(username)
+
         return JsonResponse({"status": "User added successfully"})
     except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
 
 def putMethod(request):
-    data = {
-            "status": "success",
-            "message": "This is a JSON response from a normal view",
-            "data": {
-                "id": 1,
-                "name": "Sample Item",
-                "description": "This is a sample item."
-            }
-        }
+    try:
+        data = json.loads(request.body)
+        currUsername = data.get('currUsername')
+        watchedUsername = data.get('watchedUsername')
+        category = data.get('category')
+        description = data.get('description')
+        addWatchedStream(currUsername=currUsername, watchedUsername=watchedUsername, category=category, description=description)
+
+        return JsonResponse({"status": "User added successfully"})
+    except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
     
         # Return data as JSON
     return JsonResponse(data)

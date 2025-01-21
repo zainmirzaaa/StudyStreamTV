@@ -173,3 +173,37 @@ def addDescriptionAndLinks(username, description, links):
         return "document not found"
 
 
+def getLiveUser(username):
+    client = get_mongo_client()
+    db = client['UserData']
+    collection = db['liveUser']
+    document = collection.find_one({"username": username})
+    if document:
+        document.pop('_id', None)
+        return JsonResponse(document)
+    return {
+            "status": "unsuccessful",
+            "message": "This is a JSON response from a normal view",
+        }
+
+
+def addWatchedStream(currUsername, watchedUsername, category, description):
+    client = get_mongo_client()
+    db = client['UserData']
+    collection = db['UserData']
+    document = collection.find_one({"username": currUsername})
+    if document:
+        collection.update_one(
+            {"username": currUsername}, 
+            {"$push": {"pastStreams": watchedUsername}} 
+        )
+        collection.update_one(
+            {"username": currUsername}, 
+            {"$push": {"categoriesWatched": category}} 
+        )
+        return "this worked"
+    else :
+        return "this didnt work"
+
+
+

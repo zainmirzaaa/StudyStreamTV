@@ -4,7 +4,7 @@ import NavBar from './Navbar';
 import { useUser } from '../Context/UserContext';
 import { useAuth } from '../Context/AuthContext';
 import { getUsername } from '../API/Firestore';
-import { getOnSignIn, addFollowing, removeFollowing} from '../API/backendAPI';
+import { getOnSignIn, addFollowing, removeFollowing, getLiveUser, addWatchedStream} from '../API/backendAPI';
 
 
 function Watch() {
@@ -59,11 +59,19 @@ function Watch() {
       try {
         console.log('Fetching username for email:', authUser.email);
         const fetchedUsername = await getUsername(authUser.email);
-        console.log(authUser.email)
+        console.log(fetchedUsername)
         const userData = await getOnSignIn(fetchedUsername);
         console.log('User Data from API:', userData);
 
         updateUser(userData); // Update context with user data
+        const tempData = await getLiveUser(username)
+        console.log(tempData)
+        if(tempData.status != null){
+          console.log(username)
+          console.log(tempData)
+          await addWatchedStream(fetchedUsername, tempData.data.username, tempData.data.category, tempData.data.description)
+        }
+
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -121,6 +129,7 @@ function Watch() {
       console.error('Error toggling follow state:', error);
     }
   };
+
 
   // Render loading state if necessary
   if (loading) {
