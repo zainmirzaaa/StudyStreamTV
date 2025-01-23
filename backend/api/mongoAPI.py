@@ -38,7 +38,8 @@ def addLiveUser(username, category, description):
     if client:
         db = client['UserData']
         collection = db['liveUser']
-        mydoc = { "username":username ,"category": category, "description": description }
+        mydoc = { "username":username ,"category": category, "description": description, 
+                 "viewerCount": 0 }
         collection.insert_one(mydoc)
 
 
@@ -179,6 +180,10 @@ def getLiveUser(username):
     collection = db['liveUser']
     document = collection.find_one({"username": username})
     if document:
+        collection.update_one(
+            {"username": username}, 
+            {"$set": {"viewerCount": document['viewerCount']+1}}
+        )
         document.pop('_id', None)
         return JsonResponse(document)
     return {
