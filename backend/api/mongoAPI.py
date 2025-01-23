@@ -77,7 +77,8 @@ def createUserInDB(username, email):
             "pastStreams": [],
             "hoursWatched": [],
             "previousWatchedStream": [],
-            "categoriesWatched": []
+            "categoriesWatched": [],
+            "pastViewers": []
         }
         try:
             collection.insert_one(mydoc)
@@ -184,6 +185,9 @@ def getLiveUser(username):
             {"username": username}, 
             {"$set": {"viewerCount": document['viewerCount']+1}}
         )
+
+        
+
         document.pop('_id', None)
         return JsonResponse(document)
     return {
@@ -206,6 +210,18 @@ def addWatchedStream(currUsername, watchedUsername, category, description):
             {"username": currUsername}, 
             {"$push": {"categoriesWatched": category}} 
         )
+        user = collection.find_one({"username": watchedUsername})
+        if user:
+            past_viewers = user.get('pastViewers', []) 
+            if currUsername not in past_viewers:  
+                past_viewers.append(currUsername)
+                collection.update_one(
+                    {"username": watchedUsername}, 
+                    {"$set": {"pastViewers": past_viewers}}
+                )
+
+
+
         return "this worked"
     else :
         return "this didnt work"
