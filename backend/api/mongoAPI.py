@@ -228,3 +228,32 @@ def addWatchedStream(currUsername, watchedUsername, category, description):
 
 
 
+def get_recommendation(username):
+    
+    # get past streams watched
+    client = get_mongo_client()
+    db = client['UserData']
+    collection = db['UserData']
+    userData = collection.find_one({"username": username})
+    pastStreams = userData['pastStreams']
+    # get users who also viewed those streams
+
+    #get past categories watched
+    pastCategories = userData['categoriesWatched']
+    recommendations = []
+    # get top live streamers in that category
+    liveUserCollection = db['liveUser']
+    for category in pastCategories:
+        top_streamer = liveUserCollection.aggregate([
+                {"$match": {"category": category}}, 
+                {"$sort": {"viewerCount": -1}},      
+                {"$limit": 1}                        
+            ])
+        top_streamer = list(top_streamer)
+        if top_streamer:
+            recommendations.append(top_streamer[0])
+        
+    # get live users and find 
+
+
+    return "hi"
