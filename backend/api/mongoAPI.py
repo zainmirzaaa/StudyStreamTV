@@ -237,7 +237,15 @@ def get_recommendation(username):
     userData = collection.find_one({"username": username})
     pastStreams = userData['pastStreams']
     # get users who also viewed those streams
-
+    for stream in pastStreams:
+        # get user who did that stream 
+        pastUserStream = collection.find_one({username: "stream"})
+        # get past viewers of that users stream
+        pastViewers = pastUserStream['pastViewers']
+        # get streams that viewer watched
+        for viewer in pastViewers:
+            # see similarity score of each viewers
+            print("hi")
     #get past categories watched
     pastCategories = userData['categoriesWatched']
     recommendations = []
