@@ -99,3 +99,10 @@ export async function addWatchedStream(currUsername, watchedUsername, category, 
         description: description
     })
 }
+
+export async function getRecommendations(username){
+    
+    return axios.get("http://127.0.0.1:8000/recommendations"), {
+        username: username
+    }
+}

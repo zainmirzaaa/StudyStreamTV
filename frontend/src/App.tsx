@@ -7,6 +7,7 @@ import Home from './components/Home';
 import Profile from './components/Profile';
 import Stream from './components/Stream.tsx';
 import Watch from './components/Watch.tsx';
+import { Recommendation } from './components/Recommendation.tsx';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/stream" element={<Stream />} />
         <Route path="/:username" element={<Watch />} />
+        <Route path="/recommendation" element={<Recommendation/>}/>
       </Routes>
     </Router>
   

@@ -46,6 +46,7 @@ const NavBar: React.FC = () => {
           <a href="/profile" style={styles.navLink}>Profile</a>
           <a href="/stream" style={styles.navLink}>Stream</a>
           <a href="/watch" style={styles.navLink}>Watch</a>
+          <a href="/recommendation" style={styles.navLink}>Recommendations</a>
         </div>
 
         {/* Search Icon or Search Bar */}
